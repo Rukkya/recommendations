@@ -1,0 +1,198 @@
+/* Main Styles for BookSage */
+
+/* Global Styles */
+:root {
+    --primary-color: #4e73df;
+    --secondary-color: #36b9cc;
+    --success-color: #1cc88a;
+    --info-color: #36b9cc;
+    --warning-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --light-color: #f8f9fc;
+    --dark-color: #5a5c69;
+}
+
+body {
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f8f9fc;
+    color: #333;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Book Cards */
+.book-card {
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.book-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.book-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.book-placeholder-mini {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recommendation-score {
+    font-size: 0.8rem;
+}
+
+/* Rating Stars */
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: #f6c23e;
+}
+
+/* Book Cover */
+.book-cover {
+    max-height: 350px;
+    object-fit: contain;
+}
+
+/* Avatar Placeholder */
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+/* Feature Icons */
+.feature-icon {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+footer a {
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+.social-links a {
+    text-decoration: none;
+    margin-right: 10px;
+    transition: transform 0.3s ease;
+}
+
+.social-links a:hover {
+    transform: translateY(-3px);
+}
+
+/* Onboarding */
+.genre-checkbox {
+    display: none;
+}
+
+.genre-label {
+    display: inline-block;
+    margin: 5px;
+    padding: 8px 15px;
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.genre-checkbox:checked + .genre-label {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Book Details */
+.book-description {
+    line-height: 1.6;
+}
+
+/* Search */
+.search-results {
+    min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .book-card .card-img-top {
+        height: 180px;
+    }
+    
+    .jumbotron h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

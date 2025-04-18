@@ -1,0 +1,77 @@
+/* Login and Signup Page Styles */
+
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header, .card-footer {
+    border: none;
+}
+
+.input-group-text {
+    background-color: #f8f9fc;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+.input-group:focus-within .input-group-text {
+    border-color: #4e73df;
+}
+
+.input-group:focus-within .form-control {
+    border-color: #4e73df;
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+
+.form-check-input:checked {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+/* Animation */
+.card {
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (min-width: 768px) {
+    .card {
+        margin-top: 2rem;
+    }
+}

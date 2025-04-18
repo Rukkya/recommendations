@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Onboarding - BookSage{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h1 class="h3 mb-0">Welcome to BookSage!</h1>
+                <p class="text-muted mb-0">Let's set up your reading preferences to get personalized recommendations</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('onboarding') }}">
+                    <div class="mb-4">
+                        <h4><i class="fas fa-tags text-primary me-2"></i>Step 1: Select Your Favorite Genres</h4>
+                        <p class="text-muted small">Choose at least 3 genres you enjoy reading</p>
+                        
+                        <div class="genre-selection mt-3">
+                            {% for genre in genres %}
+                                <input type="checkbox" class="genre-checkbox" id="genre-{{ loop.index }}" name="genres" value="{{ genre }}">
+                                <label for="genre-{{ loop.index }}" class="genre-label">{{ genre }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4><i class="fas fa-heart text-primary me-2"></i>Step 2: Select Books You've Enjoyed</h4>
+                        <p class="text-muted small">Select some books you've read and enjoyed to help us understand your taste</p>
+                        
+                        <div class="row mt-3">
+                            {% for book in popular_books %}
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <div class="card book-selection-card h-100">
+                                        <div class="form-check position-absolute end-0 top-0 m-2">
+                                            <input class="form-check-input" type="checkbox" name="favorite_books" value="{{ book.id }}" id="book-{{ book.id }}">
+                                            <label class="form-check-label" for="book-{{ book.id }}"></label>
+                                        </div>
+                                        
+                                        {% if book.image_url %}
+                                            <img src="{{ book.image_url }}" class="card-img-top" alt="{{ book.title }}">
+                                        {% else %}
+                                            <div class="book-placeholder text-center p-3 bg-light">
+                                                <i class="fas fa-book fa-2x text-secondary"></i>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="card-body">
+                                            <h6 class="card-title text-truncate" title="{{ book.title }}">{{ book.title }}</h6>
+                                            <p class="card-text text-muted small">{{ book.author }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-magic me-2"></i>Create My Recommendations
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle genre selection
+    const genreCheckboxes = document.querySelectorAll('.genre-checkbox');
+    const genreLabels = document.querySelectorAll('.genre-label');
+    
+    // Limit genre selection to maximum 5
+    let selectedGenres = 0;
+    const maxGenres = 5;
+    
+    genreCheckboxes.forEach((checkbox, index) => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                selectedGenres++;
+                
+                if (selectedGenres > maxGenres) {
+                    this.checked = false;
+                    selectedGenres--;
+                    alert(`You can select a maximum of ${maxGenres} genres.`);
+                }
+            } else {
+                selectedGenres--;
+            }
+        });
+    });
+    
+    // Handle book selection cards
+    const bookCards = document.querySelectorAll('.book-selection-card');
+    const bookCheckboxes = document.querySelectorAll('input[name="favorite_books"]');
+    
+    bookCards.forEach((card, index) => {
+        card.addEventListener('click', function(e) {
+            // Don't toggle if clicking directly on the checkbox
+            if (e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                
+                // Update card styling
+                if (checkbox.checked) {
+                    this.classList.add('border-primary');
+                } else {
+                    this.classList.remove('border-primary');
+                }
+            }
+        });
+    });
+    
+    // When checkbox is clicked directly
+    bookCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.book-selection-card');
+            
+            if (this.checked) {
+                card.classList.add('border-primary');
+            } else {
+                card.classList.remove('border-primary');
+            }
+        });
+    });
+    
+    // Form validation before submit
+    const form = document.querySelector('form');
+    
+    form.addEventListener('submit', function(e) {
+        // Check if at least 3 genres are selected
+        const selectedGenresCount = document.querySelectorAll('.genre-checkbox:checked').length;
+        
+        if (selectedGenresCount < 3) {
+            e.preventDefault();
+            alert('Please select at least 3 genres to continue.');
+            return false;
+        }
+        
+        // Check if at least 1 book is selected
+        const selectedBooksCount = document.querySelectorAll('input[name="favorite_books"]:checked').length;
+        
+        if (selectedBooksCount < 1) {
+            e.preventDefault();
+            alert('Please select at least one book you\'ve enjoyed.');
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>
+{% endblock %}

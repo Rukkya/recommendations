@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}BookSage - Personalized Book Recommendations{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded-3 mb-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h1 class="display-4">Discover Your Next Favorite Book</h1>
+                <p class="lead">BookSage uses AI to recommend books based on your personal preferences and reading history.</p>
+                {% if not current_user.is_authenticated %}
+                <hr class="my-4">
+                <div class="d-flex">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    <a href="{{ url_for('signup') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Sign Up
+                    </a>
+                </div>
+                {% else %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-book me-2"></i>View Your Recommendations
+                </a>
+                {% endif %}
+            </div>
+            <div class="col-md-4 d-none d-md-block">
+                <img src="{{ url_for('static', filename='img/book-stack.svg') }}" alt="Books illustration" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>How It Works</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-user-cog fa-3x text-primary"></i>
+                </div>
+                <h3 class="card-title h5">Create Your Profile</h3>
+                <p class="card-text">Tell us about your reading preferences and favorite genres. The more we know, the better recommendations you'll get.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-book-reader fa-3x text-primary"></i>
+                </div>
+                <h3 class="card-title h5">Rate Books You've Read</h3>
+                <p class="card-text">Rate books you've already read to help us understand your taste and refine your personalized recommendations.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-robot fa-3x text-primary"></i>
+                </div>
+                <h3 class="card-title h5">Get AI-Powered Recommendations</h3>
+                <p class="card-text">Our hybrid AI engine analyzes your preferences to find books you'll love. Plus, chat with our AI about any book-related questions!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>Popular Books</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    {% for book in popular_books %}
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card h-100 book-card shadow-sm">
+            {% if book.image_url %}
+            <img src="{{ book.image_url }}" class="card-img-top" alt="{{ book.title }}">
+            {% else %}
+            <div class="book-placeholder text-center p-4 bg-light">
+                <i class="fas fa-book fa-3x text-secondary"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title text-truncate" title="{{ book.title }}">{{ book.title }}</h5>
+                <p class="card-text text-muted">{{ book.author }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="rating">
+                        {% for i in range(5) %}
+                            {% if i < book.average_rating|int %}
+                            <i class="fas fa-star text-warning"></i>
+                            {% elif i < book.average_rating|round(0, 'ceil') %}
+                            <i class="fas fa-star-half-alt text-warning"></i>
+                            {% else %}
+                            <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <small class="text-muted ms-1">({{ book.ratings_count }})</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-top-0">
+                <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="text-center mt-4">
+    <a href="{{ url_for('search') }}" class="btn btn-primary">
+        <i class="fas fa-search me-2"></i>Explore More Books
+    </a>
+</div>
+{% endblock %}

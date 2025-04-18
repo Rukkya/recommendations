@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Your Dashboard - BookSage{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-9">
+        <h1>Welcome, {{ current_user.username }}!</h1>
+        <p>Explore your personalized book recommendations and track your reading journey.</p>
+    </div>
+    <div class="col-md-3 text-md-end">
+        <a href="{{ url_for('chatbot_page') }}" class="btn btn-primary">
+            <i class="fas fa-comment-dots me-2"></i>Chat with BookSage AI
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Recommended Books Section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-bookmark text-primary me-2"></i>Recommended for You</h4>
+                    <button class="btn btn-sm btn-outline-primary" id="refreshRecommendations">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recommendations %}
+                    <div class="row">
+                        {% for recommendation in recommendations %}
+                            <div class="col-md-4 col-sm-6 mb-4">
+                                <div class="card h-100 book-card">
+                                    {% if recommendation.book.image_url %}
+                                        <img src="{{ recommendation.book.image_url }}" class="card-img-top" alt="{{ recommendation.book.title }}">
+                                    {% else %}
+                                        <div class="book-placeholder text-center p-4 bg-light">
+                                            <i class="fas fa-book fa-3x text-secondary"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate" title="{{ recommendation.book.title }}">{{ recommendation.book.title }}</h5>
+                                        <p class="card-text text-muted">{{ recommendation.book.author }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="rating">
+                                                {% for i in range(5) %}
+                                                    {% if i < recommendation.book.average_rating|int %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% elif i < recommendation.book.average_rating|round(0, 'ceil') %}
+                                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-warning"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            <span class="badge bg-info recommendation-score" title="Recommendation score">
+                                                {{ (recommendation.score * 100)|int }}% match
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white border-top-0">
+                                        <a href="{{ url_for('book_detail', book_id=recommendation.book.id) }}" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-books fa-3x text-muted"></i>
+                        </div>
+                        <h5>No recommendations yet</h5>
+                        <p class="text-muted">Rate some books to get personalized recommendations!</p>
+                        <a href="{{ url_for('search') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Find Books to Rate
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- User Profile Section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-user text-primary me-2"></i>Your Profile</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 64px; height: 64px;">
+                        <span class="h4 mb-0">{{ current_user.username[0]|upper }}</span>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">{{ current_user.username }}</h5>
+                        <p class="text-muted mb-0">{{ current_user.email }}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Reading Preferences</h6>
+                    {% if current_user.preferences %}
+                        {% set preferences = current_user.preferences|tojson|fromjson %}
+                        {% if preferences.genres %}
+                            <div class="mb-2">
+                                {% for genre in preferences.genres %}
+                                    <span class="badge bg-primary me-1 mb-1">{{ genre }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small">You haven't set any preferences yet.</p>
+                    {% endif %}
+                    <a href="{{ url_for('preferences') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog me-1"></i>Update Preferences
+                    </a>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Reading Stats</h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center py-2">
+                                    <h3 class="mb-0">{{ current_user.ratings.count() }}</h3>
+                                    <p class="text-muted mb-0 small">Books Rated</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center py-2">
+                                    {% set avg_rating = 0 %}
+                                    {% set ratings = current_user.ratings.all() %}
+                                    {% if ratings %}
+                                        {% set total = 0 %}
+                                        {% for rating in ratings %}
+                                            {% set total = total + rating.rating %}
+                                        {% endfor %}
+                                        {% set avg_rating = (total / ratings|length)|round(1) %}
+                                    {% endif %}
+                                    <h3 class="mb-0">{{ avg_rating }}</h3>
+                                    <p class="text-muted mb-0 small">Avg. Rating</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity Section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-history text-primary me-2"></i>Recent Activity</h4>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% if recent_ratings %}
+                        {% for rating in recent_ratings %}
+                            <li class="list-group-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        {% if rating.book.image_url %}
+                                            <img src="{{ rating.book.image_url }}" alt="{{ rating.book.title }}" class="book-thumbnail" width="40">
+                                        {% else %}
+                                            <div class="book-placeholder-mini text-center d-flex align-items-center justify-content-center bg-light rounded" style="width: 40px; height: 60px;">
+                                                <i class="fas fa-book text-secondary"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ms-3">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <p class="mb-0 fw-medium">You rated <a href="{{ url_for('book_detail', book_id=rating.book.id) }}">{{ rating.book.title }}</a></p>
+                                                <div class="rating small">
+                                                    {% for i in range(5) %}
+                                                        {% if i < rating.rating|int %}
+                                                            <i class="fas fa-star text-warning"></i>
+                                                        {% elif i < rating.rating|round(0, 'ceil') %}
+                                                            <i class="fas fa-star-half-alt text-warning"></i>
+                                                        {% else %}
+                                                            <i class="far fa-star text-warning"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ rating.timestamp.strftime('%B %d, %Y') }}</small>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item text-center py-4">
+                            <p class="text-muted mb-0">No recent activity</p>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% if recent_ratings %}
+                <div class="card-footer bg-white text-center">
+                    <a href="{{ url_for('search') }}" class="btn btn-sm btn-outline-primary">Rate More Books</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh recommendations button
+    const refreshBtn = document.getElementById('refreshRecommendations');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            // Display loading state
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...';
+            this.disabled = true;
+            
+            // Reload the page to get fresh recommendations
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+    }
+});
+</script>
+{% endblock %}

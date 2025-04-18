@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - BookSage{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                {% if book.image_url %}
+                    <img src="{{ book.image_url }}" alt="{{ book.title }}" class="img-fluid book-cover mb-3">
+                {% else %}
+                    <div class="book-placeholder text-center p-5 bg-light mb-3">
+                        <i class="fas fa-book fa-5x text-secondary"></i>
+                    </div>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <div class="rating mb-2">
+                        {% for i in range(5) %}
+                            {% if i < book.average_rating|int %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% elif i < book.average_rating|round(0, 'ceil') %}
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="text-muted ms-2">{{ book.average_rating }} ({{ book.ratings_count }} ratings)</span>
+                    </div>
+                    
+                    {% if current_user.is_authenticated %}
+                        {% if user_rating %}
+                            <div class="alert alert-info">
+                                <p class="mb-0"><i class="fas fa-check-circle me-2"></i>You rated this book {{ user_rating.rating }}/5</p>
+                            </div>
+                        {% endif %}
+                        
+                        <button type="button" class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#rateBookModal">
+                            <i class="fas fa-star me-2"></i>{{ 'Update Your Rating' if user_rating else 'Rate This Book' }}
+                        </button>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Rate
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('chatbot_page') }}?book_id={{ book.id }}" class="btn btn-outline-info w-100">
+                        <i class="fas fa-comment-dots me-2"></i>Discuss with AI
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% if book.genres %}
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-tags text-primary me-2"></i>Genres</h5>
+            </div>
+            <div class="card-body">
+                {% for genre in book.genres.split(',') %}
+                    <a href="{{ url_for('search') }}?q={{ genre.strip() }}" class="badge bg-primary text-decoration-none me-1 mb-1">{{ genre.strip() }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if book.isbn %}
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle text-primary me-2"></i>Book Details</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% if book.year %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Publication Year</span>
+                        <span>{{ book.year }}</span>
+                    </li>
+                    {% endif %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>ISBN</span>
+                        <span>{{ book.isbn }}</span>
+                    </li>
+                    {% if book.language %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Language</span>
+                        <span>{{ book.language }}</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h1 class="h3 mb-0">{{ book.title }}</h1>
+                <p class="text-muted mb-0">by {{ book.author }}</p>
+            </div>
+            <div class="card-body">
+                <h5 class="mb-3">Description</h5>
+                {% if book.description %}
+                    <div class="book-description mb-4">
+                        <p>{{ book.description }}</p>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No description available for this book.</p>
+                {% endif %}
+                
+                {% if similar_books %}
+                    <h5 class="mt-4 mb-3">Similar Books You Might Enjoy</h5>
+                    <div class="row">
+                        {% for similar_book in similar_books %}
+                            <div class="col-md-4 col-sm-6 mb-3">
+                                <div class="card h-100">
+                                    {% if similar_book.image_url %}
+                                        <img src="{{ similar_book.image_url }}" class="card-img-top" alt="{{ similar_book.title }}">
+                                    {% else %}
+                                        <div class="book-placeholder-small text-center p-3 bg-light">
+                                            <i class="fas fa-book fa-2x text-secondary"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h6 class="card-title text-truncate" title="{{ similar_book.title }}">{{ similar_book.title }}</h6>
+                                        <p class="card-text text-muted small">{{ similar_book.author }}</p>
+                                    </div>
+                                    <div class="card-footer bg-white border-top-0 p-2">
+                                        <a href="{{ url_for('book_detail', book_id=similar_book.id) }}" class="btn btn-outline-primary btn-sm w-100">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rate Book Modal -->
+<div class="modal fade" id="rateBookModal" tabindex="-1" aria-labelledby="rateBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rateBookModalLabel">{{ 'Update Rating' if user_rating else 'Rate This Book' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('rate_book', book_id=book.id) }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Your Rating</label>
+                        <div class="rating-input text-center">
+                            <div class="star-rating">
+                                {% for i in range(1, 6) %}
+                                    <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if user_rating and user_rating.rating == i %}checked{% endif %} required>
+                                    <label for="star{{ i }}"><i class="far fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="review" class="form-label">Your Review (Optional)</label>
+                        <textarea class="form-control" id="review" name="review" rows="4">{{ user_rating.review if user_rating else '' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Star rating functionality
+    const ratingInputs = document.querySelectorAll('.star-rating input');
+    const ratingLabels = document.querySelectorAll('.star-rating label');
+    
+    // Update star appearance on load
+    updateStars();
+    
+    // Update stars when rating changes
+    ratingInputs.forEach(input => {
+        input.addEventListener('change', updateStars);
+    });
+    
+    function updateStars() {
+        let selectedRating = 0;
+        ratingInputs.forEach(input => {
+            if (input.checked) {
+                selectedRating = parseInt(input.value);
+            }
+        });
+        
+        ratingLabels.forEach((label, index) => {
+            // Reverse the index since stars are displayed in reverse order
+            const starValue = 5 - index;
+            
+            if (starValue <= selectedRating) {
+                label.innerHTML = '<i class="fas fa-star text-warning"></i>';
+            } else {
+                label.innerHTML = '<i class="far fa-star text-warning"></i>';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
