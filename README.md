@@ -34,7 +34,7 @@ BookSage is a comprehensive book recommendation system that uses hybrid filterin
 1. Clone the repository:
 ```
 git clone https://github.com/rukkya/recommendations.git
-cd booksage
+cd recommendations
 ```
 
 2. Create a virtual environment:
