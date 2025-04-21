@@ -5,6 +5,7 @@ BookSage is a comprehensive book recommendation system that uses hybrid filterin
 ![Uploading image.png…]()
 
 
+
 ## Features
 
 - **Hybrid Recommendation Engine**: Combines content-based and collaborative filtering for better recommendations
