@@ -2,8 +2,6 @@
 
 BookSage is a comprehensive book recommendation system that uses hybrid filtering techniques and AI to provide personalized book recommendations. Built with Python, Flask, and the Gemini API, it offers content-based and collaborative filtering recommendations along with an intelligent chatbot for discussing books.
 
-![Uploading image.png…]()
-
 
 
 ## Features
@@ -145,9 +143,6 @@ Edit the parameters in `utils/recommendation_engine.py`:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgements
 
